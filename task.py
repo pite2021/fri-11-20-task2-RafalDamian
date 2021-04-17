@@ -1,26 +1,65 @@
-#
-#Banking simulator. Write a code in python that simulates the banking system. 
-#The program should:
-# - be able to create new banks
-# - store client information in banks
-# - allow for cash input and withdrawal
-# - allow for money transfer from client to client
-#If you can think of any other features, you can add them.
-#This code shoud be runnable with 'python task.py'.
-#You don't need to use user input, just show me in the script that the structure of your code works.
-#If you have spare time you can implement: Command Line Interface, some kind of data storage, or even multiprocessing.
-#
-#Try to expand your implementation as best as you can. 
-#Think of as many features as you can, and try implementing them.
-#Make intelligent use of pythons syntactic sugar (overloading, iterators, generators, etc)
-#Most of all: CREATE GOOD, RELIABLE, READABLE CODE.
-#The goal of this task is for you to SHOW YOUR BEST python programming skills.
-#Impress everyone with your skills, show off with your code.
-#
-#Your program must be runnable with command "python task.py".
-#Show some usecases of your library in the code (print some things)
-#
-#When you are done upload this code to your github repository. 
-#
-#Delete these comments before commit!
-#Good luck.
+class Bank:
+
+  def __init__(self, name, interest):
+    self.name = name.title()
+    self.interest = interest
+    self.clients = []
+
+  def add_client(self, client):
+    client.bank = self.name
+    self.clients.append(client.client_info())
+
+  def delete_client(self, client):
+    self.clients.remove(client.client_info)
+
+  def give_credit(self, client, ammount):
+    if client.client_info() in self.clients:
+      client.cash += ammount
+      client.add_credit(self.name, self.interest, self.ammount)
+
+
+class Client:
+
+  def __init__(self, name, surname, cash=2000):
+    self.name = name.title()
+    self.surname = surname.title()
+    self.cash = cash
+    self.bank = 'no bank'
+    self.credit_info = []
+
+  def add_credit(self, bank_name, interest, ammount):
+    self.credit_info.append(
+      {
+      'bank' : bank_name,
+      'ammount' : ammount,
+      'interest' : interest
+      }
+    )
+
+  def transfer(self, target, ammount):
+    self.cash -= ammount
+    target.cash += ammount
+
+  def client_info(self):
+    return {
+        'name' : self.name,
+        'surname' : self.surname,
+        'cash' : self.cash,
+        'bank' : self.bank,
+        'credits' : self.credit_info
+        }
+
+  
+if __name__ == '__main__':
+  alior = Bank('alior', 0.02)
+  pekao = Bank('PEKAO', 0.1)
+  wbk = Bank('WBK', 0.06)
+
+  maciek = Client('Maciek', 'Kazimierczak', 5000)
+  kopec = Client('Pawel', 'Kopec', 2137)
+  cholda = Client ('Lukas', 'Cholda', 6900)
+
+  print(maciek.client_info)
+  alior.add_client(maciek)
+  print(maciek.client_info)
+  print(maciek.bank)
