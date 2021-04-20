@@ -9,30 +9,38 @@ class Bank:
   
   def add_client(self, client):
     client.bank = self.name
-    self.clients.append(client)
+    self.clients.append(client.full_name())
 
   def delete_client(self, client):
-    if client in self.clients:
+    if client.full_name() in self.clients:
       client.bank = 'no bank'
-      self.clients.remove(client)
+      self.clients.remove(client.full_name())
+
+  def change_bank(self, client, new_bank):
+    if client.full_name() in self.clients:
+      client.bank = new_bank.name
+      self.delete_client(client)
+      new_bank.add_client(client)
 
   def give_credit(self, client, ammount):
-    if client in self.clients:
+    if client.full_name() in self.clients:
       client.cash += ammount
       client.add_credit(self.name, self.interest, self.ammount)
 
   def transfer(self, client, target, ammount):
-    if client in self.clients:
+    if client.full_name() in self.clients:
       client.cash -= ammount
       target.cash += ammount
       
   def withdrawal(self, client, ammount):
-    if client in self.clients:
+    if client.full_name() in self.clients:
       client.cash -= ammount
 
-  def describe_clients(self):
-    for customer in self.clients:
-      return customer.client_info()
+  def deposit(self, client, ammount):
+    if client.full_name() in self.clients:
+      client.cash -= ammount
+      client.add_credit(self.name, self.interest, self.ammount)
+
 
 
 class Client:
@@ -43,6 +51,7 @@ class Client:
     self.cash = cash
     self.bank = 'no bank'
     self.credit_info = []
+    self.deposits = []
 
   def add_credit(self, bank_name, interest, ammount):
     self.credit_info.append(
@@ -53,14 +62,29 @@ class Client:
       }
     )
 
+  def add_deposit(self, bank_name, interest, ammount):
+    self.deposits.append(
+      {
+      'bank' : bank_name,
+      'ammount' : ammount,
+      'interest' : interest
+      }
+    )
+
+
+  def full_name(self):
+    return {'name':self.name, 'surname':self.surname}
+
   def client_info(self):
     return {
         'name' : self.name,
         'surname' : self.surname,
         'cash' : self.cash,
         'bank' : self.bank,
-        'credits' : self.credit_info
+        'credits' : self.credit_info,
+        'deposits' : self.deposits
         }
+
 
   
 if __name__ == '__main__':
@@ -86,6 +110,18 @@ if __name__ == '__main__':
   alior.add_client(client2)
   print(client1.client_info())
   print(client1.bank)
-  print(alior.clients.client_info())
-  alior.delete_client(client1)
-  print(alior.clients.client_info())
+  print(alior.clients)
+
+  print(client1.cash, client2.cash)
+  alior.transfer(client1, client2, 1000)
+  print(client1.cash, client2.cash)
+
+  print(client1.cash)
+  alior.withdrawal(client1, 200)
+  print(client1.cash)
+
+  alior.change_bank(client1, pekao)
+  print(client1.bank)
+  print(alior.clients)
+  print(pekao.clients)
+
