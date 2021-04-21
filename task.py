@@ -1,6 +1,7 @@
 import multiprocessing
 from dataclasses import dataclass, field
 
+
 class Bank:
 
   def __init__(self, name, interest):
@@ -107,8 +108,10 @@ class Client:
   def give_status(cls):
     return cls.status
 
+
 class Admin(Client):
   status = 'Admin'
+
 
 @dataclass
 class UnderageClient:
@@ -121,8 +124,6 @@ class UnderageClient:
     return {'name':self.name, 'surname':self.surname}
 
 
-
-  
 if __name__ == '__main__':
   bank1 = Bank('alior', 0.02)
   bank2 = Bank('Pekao', 0.1)
@@ -142,7 +143,6 @@ if __name__ == '__main__':
   clients.append(UnderageClient('Krzysztof', 'Dziadowiec', 5021))
   clients.append(UnderageClient('Alina', 'Norek', 3456))
   clients.append(UnderageClient ('Juan', 'Sekundo', 54313))
-
 
   processes = []
   
@@ -166,34 +166,34 @@ if __name__ == '__main__':
 
   for i in range(0, 4):
     for bank in banks:
-      if clients[i].bank == bank.name:
+      if bank.check_client(clients[i]):
         print(clients[i].cash, clients[i+1].cash)
         bank.transfer(clients[i], clients[i+1], 200)
         print(clients[i].cash, clients[i+1].cash)
 
   for client in clients[4:8]:
     for bank in banks:
-      if client.bank == bank.name:
+      if bank.check_client(client):
         print(client.cash)
         bank.withdrawal(client, 1000)
         print(client.cash)
         break
 
   for client in clients[8:]:
-    if client.bank == bank1.name:
+    if bank.check_client(client):
       bank1.change_bank(client, bank2)
       print(client.bank)
 
   for client in clients[0:6]:
     for bank in banks:
-      if client.bank == bank.name:
+      if bank.check_client(client):
         bank.give_credit(client, 100000)
         print(client.client_info())
         break
 
   for client in clients[3:7]:
     for bank in banks:
-      if client.bank == bank.name:
+      if bank.check_client(client):
         bank.deposit(client, 250)
         print(client.client_info())
         break
