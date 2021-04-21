@@ -1,4 +1,5 @@
-
+import multiprocessing
+from dataclasses import dataclass, field
 
 class Bank:
 
@@ -6,44 +7,51 @@ class Bank:
     self.name = name.title()
     self.interest = interest
     self.clients = []
+
+  def welcome():
+    return 'Welcome to our bank!'
   
   def add_client(self, client):
     client.bank = self.name
     self.clients.append(client.full_name())
 
   def delete_client(self, client):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.bank = 'no bank'
       self.clients.remove(client.full_name())
 
   def change_bank(self, client, new_bank):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.bank = new_bank.name
       self.delete_client(client)
       new_bank.add_client(client)
 
   def give_credit(self, client, ammount):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.cash += ammount
-      client.add_credit(self.name, self.interest, self.ammount)
+      client.add_credit(self.name, self.interest, ammount)
 
   def transfer(self, client, target, ammount):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.cash -= ammount
       target.cash += ammount
       
   def withdrawal(self, client, ammount):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.cash -= ammount
 
   def deposit(self, client, ammount):
-    if client.full_name() in self.clients:
+    if self.check_client(client):
       client.cash -= ammount
-      client.add_credit(self.name, self.interest, self.ammount)
+      client.add_deposit(self.name, self.interest, ammount)
 
+  def check_client(self, client):
+    return client.full_name() in self.clients
 
 
 class Client:
+
+  status = 'Client'
 
   def __init__(self, name, surname, cash=2000):
     self.name = name.title()
@@ -71,7 +79,6 @@ class Client:
       }
     )
 
-
   def full_name(self):
     return {'name':self.name, 'surname':self.surname}
 
@@ -85,43 +92,98 @@ class Client:
         'deposits' : self.deposits
         }
 
+  def give_status(cls):
+    return cls.status
+
+class Admin(Client):
+  status = 'Admin'
+
+@dataclass
+class UnderageClient:
+  name : str
+  surname : str
+  cash : float
+  bank : str = field(default='no bank')
+
+  def full_name(self):
+    return {'name':self.name, 'surname':self.surname}
+
+
 
   
 if __name__ == '__main__':
-  alior = Bank('alior', 0.02)
-  pekao = Bank('PEKAO', 0.1)
-  wbk = Bank('WBK', 0.06)
+  bank1 = Bank('alior', 0.02)
+  bank2 = Bank('Pekao', 0.1)
+  bank3 = Bank('mbank', 0.06)
+  banks = [bank1, bank2, bank3]
 
-  client1 = Client('Maciek', 'Kazimierczak', 5000)
-  client2 = Client('Pawel', 'Kopec', 2137)
-  client3 = Client ('Lukas', 'Cholda', 6900)
-  client4 = Client('Bohdan', 'Pietrek', 25000)
-  client5 = Client('Adam', 'Pies', 5437)
-  client6 = Client ('Mikolaj', 'Nakladka', 690540)
-  client7 = Client('Witold', 'Gutowski', 5030)
-  client8 = Client('Anna', 'Koperek', 12137)
-  client9 = Client ('Ewelina', 'Kielbasa', 420)
-  client10 = Client('Krzysztof', 'Dziadowiec', 50900)
-  client11 = Client('Alina', 'Norek', 3456)
-  client12 = Client ('Juan', 'Sekundo', 54313)
+  clients = []
+  clients.append(Client('Maciek', 'Kazimierski', 5000))
+  clients.append(Client('Pawel', 'Kopec', 2137))
+  clients.append(Client ('Lukas', 'Holda', 6900))
+  clients.append(Client('Bohdan', 'Pietrek', 25000))
+  clients.append(Client('Adam', 'Pies', 5437))
+  clients.append(Client ('Mikolaj', 'Nakladka', 690540))
+  clients.append(Client('Witold', 'Gutowski', 5030))
+  clients.append(Client('Anna', 'Koperek', 12137))
+  clients.append(UnderageClient ('Ewelina', 'Kielbasa', 420))
+  clients.append(UnderageClient('Krzysztof', 'Dziadowiec', 5021))
+  clients.append(UnderageClient('Alina', 'Norek', 3456))
+  clients.append(UnderageClient ('Juan', 'Sekundo', 54313))
+
+
+  processes = []
   
-  print(client1.client_info())
-  alior.add_client(client1)
-  alior.add_client(client2)
-  print(client1.client_info())
-  print(client1.bank)
-  print(alior.clients)
+  i = 0
+  for j in range(4):
+    for bank in banks:
+      p = multiprocessing.Process(target = bank.add_client(clients[i]))
+      p.start()
+      processes.append(p)
+      i = i+1
 
-  print(client1.cash, client2.cash)
-  alior.transfer(client1, client2, 1000)
-  print(client1.cash, client2.cash)
+  for process in processes:
+    process.join()
 
-  print(client1.cash)
-  alior.withdrawal(client1, 200)
-  print(client1.cash)
+  for client in clients:
+    print(client.bank)
+  
+  print(Admin.give_status(Admin))
+  print(Client.give_status(Client))
+  print(Bank.welcome())
 
-  alior.change_bank(client1, pekao)
-  print(client1.bank)
-  print(alior.clients)
-  print(pekao.clients)
+  for i in range(0, 4):
+    for bank in banks:
+      if clients[i].bank == bank.name:
+        print(clients[i].cash, clients[i+1].cash)
+        bank.transfer(clients[i], clients[i+1], 200)
+        print(clients[i].cash, clients[i+1].cash)
+
+  for client in clients[4:8]:
+    for bank in banks:
+      if client.bank == bank.name:
+        print(client.cash)
+        bank.withdrawal(client, 1000)
+        print(client.cash)
+        break
+
+  for client in clients[8:]:
+    if client.bank == bank1.name:
+      bank1.change_bank(client, bank2)
+      print(client.bank)
+
+  for client in clients[0:6]:
+    for bank in banks:
+      if client.bank == bank.name:
+        bank.give_credit(client, 100000)
+        print(client.client_info())
+        break
+
+  for client in clients[3:7]:
+    for bank in banks:
+      if client.bank == bank.name:
+        bank.deposit(client, 250)
+        print(client.client_info())
+        break
+
 
