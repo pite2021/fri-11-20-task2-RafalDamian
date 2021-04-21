@@ -28,21 +28,21 @@ class Bank:
 
   def give_credit(self, client, ammount):
     if self.check_client(client):
-      client.cash += ammount
+      client.cash = ammount
       client.add_credit(self.name, self.interest, ammount)
 
   def transfer(self, client, target, ammount):
     if self.check_client(client):
-      client.cash -= ammount
-      target.cash += ammount
+      client.cash = - ammount
+      target.cash = ammount
       
   def withdrawal(self, client, ammount):
     if self.check_client(client):
-      client.cash -= ammount
+      client.cash = - ammount
 
   def deposit(self, client, ammount):
     if self.check_client(client):
-      client.cash -= ammount
+      client.cash = - ammount
       client.add_deposit(self.name, self.interest, ammount)
 
   def check_client(self, client):
@@ -56,10 +56,22 @@ class Client:
   def __init__(self, name, surname, cash=2000):
     self.name = name.title()
     self.surname = surname.title()
-    self.cash = cash
+    self._cash = cash
     self.bank = 'no bank'
     self.credit_info = []
     self.deposits = []
+
+  @property
+  def cash(self):
+    return self._cash
+
+  @cash.getter
+  def cash(self):
+    return self._cash
+
+  @cash.setter
+  def cash(self, ammount):
+    self._cash += ammount
 
   def add_credit(self, bank_name, interest, ammount):
     self.credit_info.append(
