@@ -125,11 +125,12 @@ class UnderageClient:
 
 
 if __name__ == '__main__':
-  bank1 = Bank('alior', 0.02)
-  bank2 = Bank('Pekao', 0.1)
-  bank3 = Bank('mbank', 0.06)
-  banks = [bank1, bank2, bank3]
 
+  banks = []
+  banks.append(Bank('alior', 0.02))
+  banks.append(Bank('Pekao', 0.1))
+  banks.append(Bank('mbank', 0.06))
+  
   clients = []
   clients.append(Client('Maciek', 'Kazimierski', 5000))
   clients.append(Client('Pawel', 'Kopec', 2137))
@@ -180,8 +181,8 @@ if __name__ == '__main__':
         break
 
   for client in clients[8:]:
-    if bank.check_client(client):
-      bank1.change_bank(client, bank2)
+    if banks[0].check_client(client):
+      banks[0].change_bank(client, banks[1])
       print(client.bank)
 
   for client in clients[0:6]:
